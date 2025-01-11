@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Load Forecasting for Sylhet City</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+      }
+      .container {
+        max-width: 800px;
+        margin: auto;
+        width: 100%;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        padding: 20px;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        grid-column: span 2;
+        text-align: center;
+      }
+      .tabs {
+        margin-bottom: 20px;
+      }
+      .tab-buttons {
+        display: flex;
+        justify-content: start;
+        gap: 10px;
+      }
+      .tab-buttons button {
+        padding: 10px 20px;
+        border: none;
+        background: #007bff;
+        color: #fff;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .tab-buttons button.active {
+        background: #0056b3;
+      }
+      .form {
+        display: none;
+      }
+      .form.active {
+        display: block;
+      }
+      label {
+        display: block;
+        margin: 10px 0 5px;
+        font-weight: bold;
+      }
+      input {
+        width: calc(100% - 20px);
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      .loading {
+        display: none;
+        margin-top: 10px;
+        color: #007bff;
+      }
+      .success-message {
+        display: none;
+        margin-top: 10px;
+        color: green;
+        font-weight: bold;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid #ccc;
+      }
+      th,
+      td {
+        padding: 10px;
+        text-align: center;
+      }
+      th {
+        background-color: #007bff;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Load Forecasting for Sylhet City</h1>
+    <div class="container">
+      <div>
+        <div class="tabs">
+          <div class="tab-buttons">
+            <button
+              data-tab="hourly"
+              class="active"
+              onclick="showTab('hourly')"
+            >
+              Hourly
+            </button>
+            <button data-tab="daily" onclick="showTab('daily')">Daily</button>
+          </div>
+          <form
+            id="hourly"
+            class="form active"
+            onsubmit="handleFormSubmit(event, 'hourly')"
+          >
+            <label for="hourly-year">Year:</label>
+            <input
+              type="number"
+              id="hourly-year"
+              name="year"
+              value="{{ year }}"
+              placeholder="Enter year"
+              readonly
+            />
+
+            <label for="hourly-month">Month:</label>
+            <input
+              type="number"
+              id="hourly-month"
+              name="month"
+              value="{{ month }}"
+              placeholder="Enter month"
+              readonly
+            />
+
+            <label for="hourly-day">Day:</label>
+            <input
+              type="number"
+              id="hourly-day"
+              name="day"
+              value="{{ day }}"
+              placeholder="Enter day"
+              readonly
+            />
+
+            <label for="hourly-hour">Hour:</label>
+            <input
+              type="number"
+              id="hourly-hour"
+              name="hour"
+              value="{{ hour }}"
+              placeholder="Enter hour"
+              readonly
+            />
+
+            <label for="hourly-temperature">Temperature:</label>
+            <input
+              type="text"
+              id="hourly-temperature"
+              name="temperature"
+              value="{{ temperature }}"
+              placeholder="Enter temperature"
+              readonly
+            />
+
+            <label for="hourly-humidity">Humidity:</label>
+            <input
+              type="text"
+              id="hourly-humidity"
+              name="humidity"
+              value="{{ humidity }}"
+              placeholder="Enter humidity"
+              readonly
+            />
+
+            <label for="hourly-demand">Previous NLDC Demand:</label>
+            <input
+              type="text"
+              id="hourly-demand"
+              name="demand"
+              placeholder="Enter demand"
+            />
+
+            <button type="submit">Predict</button>
+            <div class="loading" id="hourly-loading">Predicting...</div>
+            <div class="success-message" id="hourly-success"></div>
+          </form>
+
+          <form
+            id="daily"
+            class="form"
+            onsubmit="handleFormSubmit(event, 'daily')"
+          >
+            <label for="daily-year">Year:</label>
+            <input
+              type="number"
+              id="daily-year"
+              name="year"
+              value="{{ year }}"
+              placeholder="Enter year"
+              readonly
+            />
+
+            <label for="daily-month">Month:</label>
+            <input
+              type="number"
+              id="daily-month"
+              name="month"
+              value="{{ month }}"
+              placeholder="Enter month"
+              readonly
+            />
+
+            <label for="daily-day">Day:</label>
+            <input
+              type="number"
+              id="daily-day"
+              name="day"
+              value="{{ day }}"
+              placeholder="Enter day"
+              readonly
+            />
+
+            <label for="daily-temperature">Temperature:</label>
+            <input
+              type="text"
+              id="daily-temperature"
+              name="temperature"
+              value="{{ temperature }}"
+              placeholder="Enter temperature"
+              readonly
+            />
+
+            <label for="daily-humidity">Humidity:</label>
+            <input
+              type="text"
+              id="daily-humidity"
+              name="humidity"
+              value="{{ humidity }}"
+              placeholder="Enter humidity"
+              readonly
+            />
+
+            <label for="daily-demand">Previous NLDC Demand:</label>
+            <input
+              type="text"
+              id="daily-demand"
+              name="demand"
+              placeholder="Enter demand"
+            />
+
+            <button type="submit">Predict</button>
+            <div class="loading" id="daily-loading">Predicting...</div>
+            <div class="success-message" id="daily-success"></div>
+          </form>
+        </div>
+      </div>
+      <div>
+        <table>
+          <thead>
+            <tr>
+              <th>Prediction</th>
+              <th>Previous</th>
+            </tr>
+          </thead>
+          <tbody id="results">
+            <tr>
+              <td>--</td>
+              <td>--</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <script>
+      function showTab(tabId) {
+        const tabs = document.querySelectorAll(".form");
+        tabs.forEach((tab) => tab.classList.remove("active"));
+        document.getElementById(tabId).classList.add("active");
+
+        const buttons = document.querySelectorAll(".tab-buttons button");
+        buttons.forEach((button) => button.classList.remove("active"));
+        document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
+      }
+
+      let isLoading = false;
+
+      async function handleFormSubmit(event, tabId) {
+        event.preventDefault();
+        if (isLoading) {
+          return;
+        }
+
+        isLoading = true;
+
+        const form = document.getElementById(tabId);
+        const loading = document.getElementById(`${tabId}-loading`);
+        const success = document.getElementById(`${tabId}-success`);
+
+        loading.style.display = "block";
+        success.style.display = "none";
+
+        const formData = new FormData(form);
+
+        try {
+          const res = await fetch("/predict", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!res.ok) {
+            console.log(`HTTP error! Status: ${res.status}`);
+            return;
+          }
+
+          const data = await res.json();
+          console.log(data);
+
+          success.style.display = "block";
+          success.innerHTML = `Next day predicted nldc demand is ${data.prediction}`;
+        } catch (error) {
+          console.error("Error:", error);
+        } finally {
+          loading.style.display = "none";
+          isLoading = false;
+        }
+      }
+    </script>
+  </body>
+</html>
