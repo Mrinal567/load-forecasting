@@ -6,5 +6,5 @@ Pandas
 Flask
 Scikit-learn
 Keras
-schedule
-gunicorn
+# schedule
+# gunicorn

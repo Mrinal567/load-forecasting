@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from datetime import datetime
 from DB import DB
 from model import predict_day, predict_hour
-from auto_input import start_auto_input
+# from auto_input import start_auto_input
 
 app = Flask(__name__)
 
