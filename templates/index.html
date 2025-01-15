@@ -101,6 +101,9 @@
         background-color: #007bff;
         color: white;
       }
+      .capitalize {
+        text-transform: capitalize;
+      }
     </style>
   </head>
   <body>
@@ -189,6 +192,7 @@
               id="hourly-demand"
               name="demand"
               placeholder="Enter demand"
+              value="{{last_hour or 0}}"
             />
 
             <button type="submit">Predict</button>
@@ -257,6 +261,7 @@
               id="daily-demand"
               name="demand"
               placeholder="Enter demand"
+              value="{{last_day or 0}}"
             />
 
             <button type="submit">Predict</button>
@@ -269,15 +274,25 @@
         <table>
           <thead>
             <tr>
+              <th>Date</th>
+              <th>Type</th>
               <th>Prediction</th>
-              <th>Previous</th>
             </tr>
           </thead>
           <tbody id="results">
+            {% if history %} {% for record in history %}
+            <tr>
+              <td>{{ record.timestamp | strftime }}</td>
+              <td class="capitalize">{{ record.type }}</td>
+              <td>{{ record.prediction | round(2) }}</td>
+            </tr>
+            {% endfor %} {% else %}
             <tr>
               <td>--</td>
               <td>--</td>
+              <td>--</td>
             </tr>
+            {% endif %}
           </tbody>
         </table>
       </div>

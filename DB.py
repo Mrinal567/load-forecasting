@@ -1,6 +1,7 @@
 import sqlite3
 from sqlite3 import Error
 import threading
+from datetime import datetime
 
 class DB:
     _thread_local = threading.local()
@@ -29,8 +30,18 @@ class DB:
                 );
                 """
             )
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS predictions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    type TEXT NOT NULL,
+                    prediction REAL NOT NULL,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
             connection.commit()
-            print("Table 'readings' created successfully.")
+            print("Tables created successfully.")
         except Error as e:
             print(f"Database connection failed: {e}")
 
@@ -75,7 +86,7 @@ class DB:
 
         try:
             cursor = DB.get_connection().cursor()
-            cursor.execute(sql, {"given_timestamp": "2024-12-19 12:00:00"})  # Replace with your desired timestamp
+            cursor.execute(sql, {"given_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
             result = cursor.fetchone()
             if result:
                 return {
@@ -87,5 +98,60 @@ class DB:
         except Error as e:
             print(f"Fetch failed: {e}")
             return {"temperature": None, "humidity": None}
+        
+    @staticmethod
+    def get_predictions():
+        sql = "SELECT * FROM predictions ORDER BY timestamp DESC LIMIT 10"
 
+        try:
+            cursor = DB.get_connection().cursor()
+            cursor.execute(sql)
+            rows = cursor.fetchall()  # Fetch all rows
+            if rows:
+                columns = [desc[0] for desc in cursor.description]
+                result = [dict(zip(columns, row)) for row in rows]
+                return result
+            else:
+                return None
+        except Error as e:
+            print(f"Fetch failed: {e}")
+            return None
+        
+    @staticmethod
+    def get_closest_predictions():
+        query = """
+        WITH HourlyClosest AS (
+            SELECT 
+                prediction
+            FROM predictions
+            WHERE type = 'hourly' 
+            AND timestamp >= datetime('now', '-1 hour')
+            ORDER BY ABS(strftime('%s', timestamp) - strftime('%s', 'now')) ASC
+            LIMIT 1
+        ),
+        DailyClosest AS (
+            SELECT 
+                prediction
+            FROM predictions
+            WHERE type = 'daily' 
+            AND timestamp >= datetime('now', '-24 hours')
+            ORDER BY ABS(strftime('%s', timestamp) - strftime('%s', 'now')) ASC
+            LIMIT 1
+        )
+        SELECT 'hourly' AS type, prediction FROM HourlyClosest
+        UNION ALL
+        SELECT 'daily' AS type, prediction FROM DailyClosest;
+        """
 
+        cursor = DB.get_connection().cursor()
+
+        # Execute the query
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        # Build the dictionary
+        predictions = {'hourly': None, 'daily': None}
+        for row in results:
+            predictions[row[0]] = round(row[1], 2)
+
+        return predictions

@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, render_template
 from datetime import datetime
 from DB import DB
 from model import predict_day, predict_hour
+from auto_input import start_auto_input
 
 app = Flask(__name__)
 
@@ -13,6 +14,7 @@ def home():
     # Get the current date and time
     now = datetime.now()
     data = DB.get_data()
+    last_p =DB.get_closest_predictions()
     return render_template(
         "index.html",
         year=now.year,
@@ -21,6 +23,9 @@ def home():
         hour=now.hour,
         humidity=data['humidity'],
         temperature=data['temperature'],
+        history=DB.get_predictions(),
+        last_hour = last_p['hourly'],
+        last_day = last_p['daily'],
     )
 
 @app.route('/insert', methods=['POST'])
@@ -64,11 +69,24 @@ def predict():
         else:
             user_input = [nldc_demand, temparature, humidity, day, month, year]
             prediction = predict_day(user_input)
-        return jsonify({"prediction": prediction}), 200
+        
+        DB.insert_data('predictions', {
+            'type': 'hourly' if hour else 'daily',
+            'prediction': prediction,
+        })
+        return jsonify({"prediction": prediction, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
+def format_datetime(value, format="%d %b (%I%p)"):
+    if not isinstance(value, datetime):
+        value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    return value.strftime(format)
 
+app.jinja_env.filters['strftime'] = format_datetime
+
+
+# start_auto_input()
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port="80")
+    app.run(debug=True, host="0.0.0.0", port="3000")
