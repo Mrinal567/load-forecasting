@@ -1,4 +1,8 @@
 flask
-tensorflow==2.18.0
-numpy==2.0.2
-joblib
+Tensorflow
+Joblib
+Numpy
+Pandas
+Flask
+Scikit-learn
+Keras
