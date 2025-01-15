@@ -2,10 +2,10 @@ from tensorflow.keras.models import load_model
 import numpy as np
 import joblib
 
-lstm_model_hr = load_model(r"D:\lstm\lstm_model.h5")
-lstm_model_day = load_model(r"D:\lstm\lstm_model_1.h5")
-scaler_hr = joblib.load(r'D:\lstm\scaler_1.pkl')
-scaler_day = joblib.load(r'D:\lstm\scaler.pkl')
+lstm_model_hr = load_model(r"./models/lstm_model.h5")
+lstm_model_day = load_model(r"./models/lstm_model_1.h5")
+scaler_hr = joblib.load(r'./models/scaler_1.pkl')
+scaler_day = joblib.load(r'./models/scaler.pkl')
 
 
 def predict_hour(user_input):
