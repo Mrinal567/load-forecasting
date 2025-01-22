@@ -1,11 +1,18 @@
 from tensorflow.keras.models import load_model
 import numpy as np
 import joblib
+import os
 
-lstm_model_hr = load_model(r"./models/lstm_model.h5")
-lstm_model_day = load_model(r"./models/lstm_model_1.h5")
-scaler_hr = joblib.load(r'./models/scaler_1.pkl')
-scaler_day = joblib.load(r'./models/scaler.pkl')
+MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")  # Get the directory of the current file
+lstm_model_hr_path = os.path.join(MODEL_DIR, "lstm_model.h5")
+lstm_model_day_path = os.path.join(MODEL_DIR, "lstm_model_1.h5")
+scaler_hr_path = os.path.join(MODEL_DIR, "scaler_1.pkl")
+scaler_day_path = os.path.join(MODEL_DIR, "scaler.pkl")
+
+lstm_model_hr = load_model(lstm_model_hr_path)
+lstm_model_day = load_model(lstm_model_hr_path)
+scaler_hr = joblib.load(scaler_hr_path)
+scaler_day = joblib.load(scaler_day_path)
 
 
 def predict_hour(user_input):
