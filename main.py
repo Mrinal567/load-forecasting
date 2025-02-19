@@ -2,12 +2,15 @@ from flask import Flask, request, jsonify, render_template
 from datetime import datetime
 from DB import DB
 from model import predict_day, predict_hour
+import pytz
 # from auto_input import start_auto_input
 
 app = Flask(__name__)
 
 # Initialize the database connection
 DB.init()
+
+TIMEZONE = pytz.timezone('Asia/Dhaka')
 
 @app.route("/")
 def home():
@@ -78,9 +81,10 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-def format_datetime(value, format="%d %b (%I%p)"):
+def format_datetime(value, format="%Y-%m-%d %H:%M"):
     if not isinstance(value, datetime):
         value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
+    value = value.replace(tzinfo=pytz.utc).astimezone(TIMEZONE)
     return value.strftime(format)
 
 app.jinja_env.filters['strftime'] = format_datetime
