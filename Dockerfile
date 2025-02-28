@@ -21,5 +21,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 80
 
 # Define the entry point for running the Flask app
-# CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:80", "main:app"]
-CMD ["python", "main.py"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:80", "main:app"]
+# CMD ["python", "main.py"]
