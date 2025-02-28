@@ -1,4 +1,3 @@
-# Use the official Python image as the base image
 FROM python:3.9-slim
 
 # Set environment variables to prevent Python from buffering stdout and stderr
@@ -6,20 +5,20 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV FLASK_ENV production
 
-
 # Set the working directory inside the container
 WORKDIR /app
 
-COPY . .
+# Copy only requirements first for better caching
+COPY requirements.txt .
 
-# Install dependencies from the requirements file
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the Flask app into the container
+# Copy the rest of the application
+COPY . .
 
-# Expose the port the Flask app runs on
-EXPOSE 80
+# Expose the port Flask runs on
+EXPOSE 8000
 
-# Define the entry point for running the Flask app
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:80", "main:app"]
-# CMD ["python", "main.py"]
+# Run Gunicorn with 4 workers, binding to port 8000
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "app:app"]
