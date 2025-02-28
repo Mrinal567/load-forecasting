@@ -1,9 +1,9 @@
 FROM python:3.9-slim
 
 # Set environment variables to prevent Python from buffering stdout and stderr
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-ENV FLASK_ENV production
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV FLASK_ENV=production
 
 # Set the working directory inside the container
 WORKDIR /app
