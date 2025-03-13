@@ -10,7 +10,8 @@ def predict(hourly = False):
     if not data:
         return
     last_vals = DB.get_closest_predictions()
-    now = datetime.now()
+    now = datetime.datetime.now()
+    result=None
     if hourly and last_vals['hourly']:
         user_input = [last_vals['hourly'], data['temperature'], data['humidity'], now.hour, now.day, now.month, now.year]
         result = predict_hour(user_input)
