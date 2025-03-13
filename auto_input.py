@@ -35,7 +35,7 @@ def run_schedule():
         schedule.run_pending()
         time.sleep(1)
 
-schedule.every(1).hours.do(give_hourly_prompt)
+schedule.every(1).minutes.do(give_hourly_prompt)
 schedule.every(1).days.do(give_daily_prompt)
 
 def start_auto_input():
