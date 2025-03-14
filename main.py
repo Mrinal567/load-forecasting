@@ -14,7 +14,7 @@ TIMEZONE = pytz.timezone('Asia/Dhaka')
 
 @app.route("/")
 def home():
-    now = datetime.now()
+    now = datetime.now(TIMEZONE)
     data = DB.get_data()
     last_p = DB.get_closest_predictions()
     return render_template(
