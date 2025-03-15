@@ -10,7 +10,7 @@ scaler_hr_path = os.path.join(MODEL_DIR, "scaler_1.pkl")
 scaler_day_path = os.path.join(MODEL_DIR, "scaler (3).pkl")
 
 lstm_model_hr = load_model(lstm_model_hr_path)
-lstm_model_day = load_model(lstm_model_hr_path)
+lstm_model_day = load_model(lstm_model_day_path)
 scaler_hr = joblib.load(scaler_hr_path)
 scaler_day = joblib.load(scaler_day_path)
 
