@@ -10,28 +10,27 @@
         margin: 0;
         padding: 0;
         background-color: #f4f4f9;
-        background-image: url("../images/image.png");
+        background-image: url("/static/images/image.png");
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
       }
       .container {
-        max-width: 900px;
+        max-width: 800px;
         margin: 0 auto;
         width: 100%;
-
-        padding: 20px;
-        border: 1px solid #ccc;
+        padding: 40px 15px;
+        border: 1px solid #06ef0e;
         background: #fff;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         background: transparent;
         transition: background 0.3s ease;
-        backdrop-filter: blur(2px);
+        backdrop-filter: blur(8px);
         margin-bottom: 10px;
       }
       h1 {
-        color: #fff;
+        color: #01fe2f;
         text-align: center;
         font-size: 48px;
         font-weight: bold;
@@ -47,14 +46,14 @@
       }
       .tab-buttons button {
         padding: 10px 20px;
-        border: 1px solid #007bff;
+        border: 1px solid #1eba23;
         background: none;
-        color: #007bff;
+        color: #044907;
         cursor: pointer;
         border-radius: 4px;
       }
       .tab-buttons button.active {
-        background: linear-gradient(to right, #007bff, #0a72e1);
+        background: linear-gradient(to right, #1eba23, #044907);
         color: white;
       }
       .form {
@@ -63,21 +62,37 @@
       .form.active {
         display: block;
       }
+      .parent {
+        display: flex;
+        margin-top: 10px;
+        height: 100%;
+      }
+      .parent > div {
+        border: 1px solid #d0e7d4;
+        display: flex;
+        flex-direction: column;
+      }
       label {
-        display: block;
-        margin: 10px 0 5px;
+        background: #1eba23;
         font-weight: bold;
+        padding: 2px 0;
+        text-align: center;
+        display: flex;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        color: white;
       }
       input {
-        width: calc(100% - 20px);
-        padding: 10px;
-        margin-bottom: 15px;
+        padding: 10px 0;
+        width: 100%;
+        outline: none;
+        text-align: center;
         border: 1px solid #ccc;
-        border-radius: 4px;
       }
       button {
         padding: 12px 20px;
-        background-color: #007bff;
+        background-color: #cf1616;
         color: white;
         border: none;
         cursor: pointer;
@@ -90,7 +105,24 @@
         transition: background 0.3s ease;
       }
       button:hover {
-        background: linear-gradient(to right, #007bff, #0a72e1);
+        background: linear-gradient(to right, #06ef0e, #022704);
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: transform 0.3s ease;
+        color: white;
+      }
+      .predict-btn {
+        background: #f00c0c;
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: 0.3s ease;
+        color: white;
+        width: 100px;
+        float: right;
+        margin: 10px 0;
+      }
+      .predict-btn:hover {
+        background: #c20a0a;
         transition: background 0.3s ease;
         transition: color 0.3s ease;
         transition: transform 0.3s ease;
@@ -100,22 +132,26 @@
       .loading {
         display: none;
         margin-top: 10px;
-        color: #007bff;
+        color: #030303;
+        font-weight: bold;
       }
       .success-message {
         display: none;
         margin-top: 10px;
-        color: green;
+
+        color: #030303;
         font-weight: bold;
       }
+    
       table {
+          display: none;
         width: 100%;
         border-collapse: collapse;
       }
       table,
       th,
       td {
-        border: 1px solid #ccc;
+        border: 1px solid #cccccc34;
       }
       th,
       td {
@@ -123,15 +159,34 @@
         text-align: center;
       }
       th {
-        background-color: #007bff;
+        background-color: #1eba23;
         color: white;
       }
       th:hover {
-        background-color: #0056b3;
+        background: linear-gradient(to right, #1eba23, #163817);
         color: white;
         transition: background 0.3s ease;
         transition: color 0.3s ease;
         transition: transform 0.3s ease;
+      }
+      tr:nth-child(2n+1){
+        background-color: #f9f9f96a;
+        transition: background 0.3s ease;
+      }
+        tr:nth-child(2n+1):hover{
+        background-color: #ffffff82;
+        transition: background 0.3s ease;
+       
+      }
+        tr:nth-child(2n){
+        background-color: #f9f9f9fd;
+        transition: background 0.3s ease;
+   
+      }
+      tr:hover{
+        color: red;
+        font-weight: bold;
+        border: 1px solid red;
       }
       .capitalize {
         text-transform: capitalize;
@@ -139,7 +194,7 @@
     </style>
   </head>
   <body>
-    <h1>Load Forecasting for Sylhet City</h1>
+    <h1>Load Forecasting  for Sylhet City</h1>
     <div class="container">
       <div>
         <div class="tabs">
@@ -156,69 +211,83 @@
             id="hourly"
             class="form active"
             onsubmit="handleFormSubmit(event, 'hourly')">
-            <label for="hourly-year">Year:</label>
-            <input
-              type="number"
-              id="hourly-year"
-              name="year"
-              value="{{ year }}"
-              placeholder="Enter year"
-              readonly />
+            <div class="parent">
+              <div>
+                <label for="hourly-year">Year:</label>
+                <input
+                  type="number"
+                  id="hourly-year"
+                  name="year"
+                  value="{{ year }}"
+                  placeholder="Enter year"
+                  readonly />
+              </div>
 
-            <label for="hourly-month">Month:</label>
-            <input
-              type="number"
-              id="hourly-month"
-              name="month"
-              value="{{ month }}"
-              placeholder="Enter month"
-              readonly />
+              <div>
+                <label for="hourly-month">Month:</label>
+                <input
+                  type="number"
+                  id="hourly-month"
+                  name="month"
+                  value="{{ month }}"
+                  placeholder="Enter month"
+                  readonly />
+              </div>
 
-            <label for="hourly-day">Day:</label>
-            <input
-              type="number"
-              id="hourly-day"
-              name="day"
-              value="{{ day }}"
-              placeholder="Enter day"
-              readonly />
+              <div>
+                <label for="hourly-day">Day:</label>
+                <input
+                  type="number"
+                  id="hourly-day"
+                  name="day"
+                  value="{{ day }}"
+                  placeholder="Enter day"
+                  readonly />
+              </div>
 
-            <label for="hourly-hour">Hour:</label>
-            <input
-              type="number"
-              id="hourly-hour"
-              name="hour"
-              value="{{ hour }}"
-              placeholder="Enter hour"
-              readonly />
+              <div>
+                <label for="hourly-hour">Hour:</label>
+                <input
+                  type="number"
+                  id="hourly-hour"
+                  name="hour"
+                  value="{{ hour }}"
+                  placeholder="Enter hour"
+                  readonly />
+              </div>
 
-            <label for="hourly-temperature">Temperature:</label>
-            <input
-              type="text"
-              id="hourly-temperature"
-              name="temperature"
-              value="{{ temperature }}"
-              placeholder="Enter temperature"
-              readonly />
+              <div>
+                <label for="hourly-temperature">Temperature:</label>
+                <input
+                  type="text"
+                  id="hourly-temperature"
+                  name="temperature"
+                  value="{{ temperature }}"
+                  placeholder="Enter temperature" />
+              </div>
 
-            <label for="hourly-humidity">Humidity:</label>
-            <input
-              type="text"
-              id="hourly-humidity"
-              name="humidity"
-              value="{{ humidity }}"
-              placeholder="Enter humidity"
-              readonly />
+              <div>
+                <label for="hourly-humidity">Humidity:</label>
+                <input
+                  type="text"
+                  id="hourly-humidity"
+                  name="humidity"
+                  value="{{ humidity }}"
+                  placeholder="Enter humidity" />
+              </div>
+           
+              <div>
+                <label for="hourly-demand">Previous NLDC Demand:</label>
+                <input
+                  type="text"
+                  id="hourly-demand"
+                  name="demand"
+                  placeholder="Enter demand"
+                  value="{{last_hour or 0}}" />
+              </div>
+            </div>
 
-            <label for="hourly-demand">Previous NLDC Demand:</label>
-            <input
-              type="text"
-              id="hourly-demand"
-              name="demand"
-              placeholder="Enter demand"
-              value="{{last_hour or 0}}" />
-
-            <button type="submit">Predict</button>
+            <button type="submit" class="predict-btn" id="predict-btn">Predict</button>
             <div class="loading" id="hourly-loading">Predicting...</div>
             <div class="success-message" id="hourly-success"></div>
           </form>
@@ -227,67 +296,80 @@
             id="daily"
             class="form"
             onsubmit="handleFormSubmit(event, 'daily')">
-            <label for="daily-year">Year:</label>
-            <input
-              type="number"
-              id="daily-year"
-              name="year"
-              value="{{ year }}"
-              placeholder="Enter year"
-              readonly />
+            <div class="parent">
+              <div>
+                <label for="daily-year">Year:</label>
+                <input
+                  type="number"
+                  id="daily-year"
+                  name="year"
+                  value="{{ year }}"
+                  placeholder="Enter year"
+                  readonly />
+              </div>
 
-            <label for="daily-month">Month:</label>
-            <input
-              type="number"
-              id="daily-month"
-              name="month"
-              value="{{ month }}"
-              placeholder="Enter month"
-              readonly />
+              <div>
+                <label for="daily-month">Month:</label>
+                <input
+                  type="number"
+                  id="daily-month"
+                  name="month"
+                  value="{{ month }}"
+                  placeholder="Enter month"
+                  readonly />
+              </div>
+              <div>
+                <label for="daily-day">Day:</label>
+                <input
+                  type="number"
+                  id="daily-day"
+                  name="day"
+                  value="{{ day }}"
+                  placeholder="Enter day"
+                  readonly />
+              </div>
 
-            <label for="daily-day">Day:</label>
-            <input
-              type="number"
-              id="daily-day"
-              name="day"
-              value="{{ day }}"
-              placeholder="Enter day"
-              readonly />
+              <div>
+                <label for="daily-temperature">Temperature:</label>
+                <input
+                  type="text"
+                  id="daily-temperature"
+                  name="temperature"
+                  value="{{ temperature }}"
+                  placeholder="Enter temperature"
+                  readonly />
+              </div>
 
-            <label for="daily-temperature">Temperature:</label>
-            <input
-              type="text"
-              id="daily-temperature"
-              name="temperature"
-              value="{{ temperature }}"
-              placeholder="Enter temperature"
-              readonly />
+              <div>
+                <label for="daily-humidity">Humidity:</label>
+                <input
+                  type="text"
+                  id="daily-humidity"
+                  name="humidity"
+                  value="{{ humidity }}"
+                  placeholder="Enter humidity"
+                  readonly />
+              </div>
 
-            <label for="daily-humidity">Humidity:</label>
-            <input
-              type="text"
-              id="daily-humidity"
-              name="humidity"
-              value="{{ humidity }}"
-              placeholder="Enter humidity"
-              readonly />
+              <div>
+                <label for="daily-demand">Previous NLDC Demand:</label>
+                <input
+                  type="text"
+                  id="daily-demand"
+                  name="demand"
+                  placeholder="Enter demand"
+                  value="{{last_day or 0}}" />
+              </div>
+            </div>
 
-            <label for="daily-demand">Previous NLDC Demand:</label>
-            <input
-              type="text"
-              id="daily-demand"
-              name="demand"
-              placeholder="Enter demand"
-              value="{{last_day or 0}}" />
-
-            <button type="submit">Predict</button>
+            <button type="submit" class="predict-btn" id="predict-btn">Predict</button>
             <div class="loading" id="daily-loading">Predicting...</div>
             <div class="success-message" id="daily-success"></div>
           </form>
         </div>
       </div>
       <div>
-        <table>
+        <table class="table active">
           <thead>
             <tr>
               <th>Date</th>
@@ -359,6 +441,7 @@
 
           success.style.display = "block";
           success.innerHTML = `Next day predicted nldc demand is ${data.prediction}`;
+            document.querySelector("table").style.display = "table";
         } catch (error) {
           console.error("Error:", error);
         } finally {
