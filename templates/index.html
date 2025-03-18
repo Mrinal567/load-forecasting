@@ -156,27 +156,10 @@
         margin: 0 auto;
         display: none;
       }
-      .predictedData {
-        display: flex;
-        justify-content: center;
-      }
-      .predictedDataBtn {
-        background: linear-gradient(to right, #01fe2f, #044907);
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 6px;
-        width: 200px;
-        font-size: 16px;
-        font-weight: bold;
-        transition: all 0.3s ease-in-out;
-        box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
-        transition: background 0.3s ease;
-        margin-bottom: 10px;
-        text-align: center;
-      }
+     
+     
       table {
-        display: none;
+     
         width: 100%;
         border-collapse: collapse;
       }
@@ -404,11 +387,7 @@
         </div>
       </div>
     </div>
-    <div class="predictedData">
-      <button class="predictedDataBtn" id="predicted-btn">
-        Predicted Data
-      </button>
-    </div>
+  
     <div class="container-bottom">
       <table class="table active">
         <thead>
@@ -436,74 +415,89 @@
       </table>
     </div>
     <script>
-      function showTab(tabId) {
-        const tabs = document.querySelectorAll(".form");
-        tabs.forEach((tab) => tab.classList.remove("active"));
-        document.getElementById(tabId).classList.add("active");
+function showTab(tabId) {
+    // Hide all forms
+    document.querySelectorAll(".form").forEach((tab) => tab.classList.remove("active"));
+    document.getElementById(tabId).classList.add("active");
 
-        const buttons = document.querySelectorAll(".tab-buttons button");
-        buttons.forEach((button) => button.classList.remove("active"));
-        document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
-      }
+    // Update active tab button
+    document.querySelectorAll(".tab-buttons button").forEach((button) => button.classList.remove("active"));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
 
-      let isLoading = false;
+    // Save active tab in localStorage
+    localStorage.setItem("activeTab", tabId);
+}
 
-      async function handleFormSubmit(event, tabId) {
-        event.preventDefault();
-        if (isLoading) {
-          return;
-        }
+// Restore active tab on page load
+document.addEventListener("DOMContentLoaded", function () {
+    const savedTab = localStorage.getItem("activeTab") || "hourly"; // Default to 'hourly'
+    showTab(savedTab);
+});
 
-        isLoading = true;
+let isLoading = false;
 
-        const form = document.getElementById(tabId);
-        const loading = document.getElementById(`${tabId}-loading`);
-        const success = document.getElementById(`${tabId}-success`);
+async function handleFormSubmit(event, tabId) {
+    event.preventDefault();
+    if (isLoading) return;
 
-        loading.style.display = "block";
-        success.style.display = "none";
+    isLoading = true;
 
-        const formData = new FormData(form);
+    const form = document.getElementById(tabId);
+    const loading = document.getElementById(`${tabId}-loading`);
+    const success = document.getElementById(`${tabId}-success`);
+    const resultsTable = document.getElementById("results");
+    const containerBottom = document.querySelector(".container-bottom");
 
-        try {
-          const res = await fetch("/predict", {
+    loading.style.display = "block";
+    success.style.display = "none";
+
+    const formData = new FormData(form);
+
+    try {
+        const res = await fetch("/predict", {
             method: "POST",
             body: formData,
-          });
+        });
 
-          if (!res.ok) {
+        if (!res.ok) {
             console.log(`HTTP error! Status: ${res.status}`);
             return;
-          }
-
-          const data = await res.json();
-          console.log(data);
-
-          success.style.display = "block";
-          success.innerHTML = `Next day predicted NLDC demand is ${data.prediction.toFixed(
-            2
-          )}`;
-          document.querySelector("table").style.display = "table";
-        } catch (error) {
-          console.error("Error:", error);
-        } finally {
-          loading.style.display = "none";
-          isLoading = false;
         }
-      }
-      document
-        .getElementById("predicted-btn")
-        .addEventListener("click", function () {
-          var containerBottom = document.querySelector(".container-bottom");
-          if (
-            containerBottom.style.display === "none" ||
-            containerBottom.style.display === ""
-          ) {
-            containerBottom.style.display = "block";
-          } else {
-            containerBottom.style.display = "none";
-          }
-        });
+
+        const data = await res.json();
+        console.log(data);
+
+        // Show success message
+        success.style.display = "block";
+        success.innerHTML = `Predicted NLDC demand: ${data.prediction.toFixed(2)}`;
+
+        // Add prediction result to the table
+        const newRow = document.createElement("tr");
+        newRow.innerHTML = `
+            <td>${new Date().toLocaleDateString()}</td>
+            <td class="capitalize">${tabId}</td>
+            <td>${data.prediction.toFixed(2)}</td>
+        `;
+        resultsTable.prepend(newRow); // Insert at the top
+
+        // Make sure the results container is visible
+        containerBottom.style.display = "block";
+    } catch (error) {
+        console.error("Error:", error);
+    } finally {
+        loading.style.display = "none";
+        isLoading = false;
+    }
+}
+
+// Attach event listeners to both predict buttons
+document.querySelectorAll(".predict-btn").forEach((button) => {
+    button.addEventListener("click", function () {
+        const containerBottom = document.querySelector(".container-bottom");
+        containerBottom.style.display = "block"; // Ensure it's visible
+    });
+});
+
     </script>
   </body>
 </html>
