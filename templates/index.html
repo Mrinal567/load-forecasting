@@ -436,6 +436,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 let isLoading = false;
 
+function formatDateTime(date) {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0"); // Two-digit month
+    const day = String(d.getDate()).padStart(2, "0"); // Two-digit day
+    const hours = String(d.getHours()).padStart(2, "0"); // Two-digit hours
+    const minutes = String(d.getMinutes()).padStart(2, "0"); // Two-digit minutes
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
 async function handleFormSubmit(event, tabId) {
     event.preventDefault();
     if (isLoading) return;
@@ -471,10 +481,10 @@ async function handleFormSubmit(event, tabId) {
         success.style.display = "block";
         success.innerHTML = `Predicted NLDC demand: ${data.prediction.toFixed(2)}`;
 
-        // Add prediction result to the table
+        // Add prediction result to the table with formatted date
         const newRow = document.createElement("tr");
         newRow.innerHTML = `
-            <td>${new Date().toLocaleDateString()}</td>
+            <td>${formatDateTime(new Date())}</td>
             <td class="capitalize">${tabId}</td>
             <td>${data.prediction.toFixed(2)}</td>
         `;
@@ -489,14 +499,6 @@ async function handleFormSubmit(event, tabId) {
         isLoading = false;
     }
 }
-
-// Attach event listeners to both predict buttons
-document.querySelectorAll(".predict-btn").forEach((button) => {
-    button.addEventListener("click", function () {
-        const containerBottom = document.querySelector(".container-bottom");
-        containerBottom.style.display = "block"; // Ensure it's visible
-    });
-});
 
     </script>
   </body>
