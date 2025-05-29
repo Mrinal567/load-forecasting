@@ -3,6 +3,7 @@ from sqlite3 import Error
 import threading
 from datetime import datetime
 
+
 class DB:
     _thread_local = threading.local()
 
@@ -11,13 +12,13 @@ class DB:
         if not hasattr(DB._thread_local, "connection"):
             DB._thread_local.connection = sqlite3.connect('database.db')
         return DB._thread_local.connection
-    
+
     @staticmethod
     def init():
         try:
             connection = DB.get_connection()
             print("Database connection successful")
-            
+
             cursor = connection.cursor()
             cursor.execute(
                 """
@@ -64,7 +65,7 @@ class DB:
     def get_data():
         sql = """
             WITH ClosestReadings AS (
-                SELECT 
+                SELECT
                     device_id,
                     temperature,
                     humidity,
@@ -77,7 +78,7 @@ class DB:
                     ) AS rank
                 FROM readings
             )
-            SELECT 
+            SELECT
                 AVG(temperature) AS avg_temperature,
                 AVG(humidity) AS avg_humidity
             FROM ClosestReadings
@@ -86,7 +87,8 @@ class DB:
 
         try:
             cursor = DB.get_connection().cursor()
-            cursor.execute(sql, {"given_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
+            cursor.execute(
+                sql, {"given_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
             result = cursor.fetchone()
             if result:
                 return {
@@ -98,10 +100,10 @@ class DB:
         except Error as e:
             print(f"Fetch failed: {e}")
             return {"temperature": None, "humidity": None}
-        
+
     @staticmethod
     def get_predictions():
-        sql = "SELECT * FROM predictions ORDER BY timestamp DESC LIMIT 10"
+        sql = "SELECT * FROM predictions ORDER BY timestamp DESC LIMIT 25"
 
         try:
             cursor = DB.get_connection().cursor()
@@ -116,24 +118,24 @@ class DB:
         except Error as e:
             print(f"Fetch failed: {e}")
             return None
-        
+
     @staticmethod
     def get_closest_predictions():
         query = """
         WITH HourlyClosest AS (
-            SELECT 
+            SELECT
                 prediction
             FROM predictions
-            WHERE type = 'hourly' 
+            WHERE type = 'hourly'
             AND timestamp >= datetime('now', '-1 hour')
             ORDER BY ABS(strftime('%s', timestamp) - strftime('%s', 'now')) ASC
             LIMIT 1
         ),
         DailyClosest AS (
-            SELECT 
+            SELECT
                 prediction
             FROM predictions
-            WHERE type = 'daily' 
+            WHERE type = 'daily'
             AND timestamp >= datetime('now', '-24 hours')
             ORDER BY ABS(strftime('%s', timestamp) - strftime('%s', 'now')) ASC
             LIMIT 1
