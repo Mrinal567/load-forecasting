@@ -16,6 +16,73 @@
         background-repeat: no-repeat;
         height: 100%;
         background-attachment: fixed;
+        /* animation: fadeIn 1s ease-in-out; */
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideInFromTop {
+        from {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideInFromLeft {
+        from {
+          transform: translateX(-50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideInFromRight {
+        from {
+          transform: translateX(50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      @keyframes glow {
+        0% {
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        50% {
+          box-shadow: 0 8px 20px rgba(30, 186, 35, 0.3);
+        }
+        100% {
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
       }
       .container {
         max-width: 800px;
@@ -27,15 +94,30 @@
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         background: transparent;
-        transition: background 0.3s ease;
+        transition: all 0.3s ease;
         backdrop-filter: blur(8px);
         margin-bottom: 10px;
+        /* animation: slideInFromLeft 0.8s ease-out; */
       }
+
+      .container:hover {
+        animation: glow 2s infinite;
+        transform: translateY(-5px);
+      }
+
       h1 {
         color: #01fe2f;
         text-align: center;
         font-size: 48px;
         font-weight: bold;
+        /* animation: slideInFromTop 1s ease-out; */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+      }
+
+      h1:hover {
+        /* animation: pulse 1s infinite; */
+        text-shadow: 0 0 20px rgba(1, 254, 47, 0.8);
       }
 
       .tabs {
@@ -45,6 +127,7 @@
         display: flex;
         justify-content: start;
         gap: 10px;
+        animation: slideInFromRight 0.6s ease-out;
       }
       .tab-buttons button {
         padding: 10px 20px;
@@ -53,26 +136,74 @@
         color: #044907;
         cursor: pointer;
         border-radius: 4px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
       }
+
+      .tab-buttons button::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.3),
+          transparent
+        );
+        transition: left 0.5s;
+      }
+
+      .tab-buttons button:hover::before {
+        left: 100%;
+      }
+
+      .tab-buttons button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 186, 35, 0.3);
+      }
+
       .tab-buttons button.active {
         background: linear-gradient(to right, #1eba23, #044907);
         color: white;
+        animation: pulse 0.5s ease-out;
       }
       .form {
         display: none;
       }
       .form.active {
         display: block;
+        animation: fadeIn 0.5s ease-in-out;
       }
       .parent {
         display: flex;
         margin-top: 10px;
         height: 100%;
+        animation: slideInFromLeft 0.7s ease-out;
       }
       .parent > div {
         border: 1px solid #d0e7d4;
         display: flex;
         flex-direction: column;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .parent > div:hover {
+        transform: scale(1.02);
+        box-shadow: 0 4px 12px rgba(208, 231, 212, 0.5);
+      }
+
+      .parent > div:nth-child(odd) {
+        animation-delay: 0.1s;
+      }
+
+      .parent > div:nth-child(even) {
+        animation-delay: 0.2s;
       }
       label {
         background: #1eba23;
@@ -121,7 +252,7 @@
         color: white;
         width: 100px;
         float: right;
-        margin: 10px 0;
+        margin: 10px 0 10px 10px;
       }
       .predict-btn:hover {
         background: #c20a0a;
@@ -129,6 +260,38 @@
         transition: color 0.3s ease;
         transition: transform 0.3s ease;
         color: white;
+      }
+      .show-btn {
+        background: #007bff;
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: 0.3s ease;
+        color: white;
+        width: 100px;
+        float: right;
+        margin: 10px 0;
+        padding: 12px 20px;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+      }
+      .show-btn:hover {
+        background: #0056b3;
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: transform 0.3s ease;
+        color: white;
+      }
+      .button-container {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin: 10px 0;
+        clear: both;
       }
 
       .loading {
@@ -156,10 +319,8 @@
         margin: 0 auto;
         display: none;
       }
-     
-     
+
       table {
-     
         width: 100%;
         border-collapse: collapse;
       }
@@ -185,7 +346,7 @@
         transition: transform 0.3s ease;
       }
       tr:nth-child(2n + 1) {
-        background-color: #f9f9f9CC;
+        background-color: #f9f9f9cc;
         transition: background 0.3s ease;
       }
       tr:nth-child(2n + 1):hover {
@@ -300,9 +461,18 @@
               </div>
             </div>
 
-            <button type="submit" class="predict-btn" id="predict-btn">
-              Predict
-            </button>
+            <div class="button-container">
+              <button
+                type="button"
+                class="show-btn"
+                id="hourly-show-btn"
+                onclick="toggleResults()">
+                Show
+              </button>
+              <button type="submit" class="predict-btn" id="hourly-predict-btn">
+                Predict
+              </button>
+            </div>
             <div class="loading" id="hourly-loading">Predicting...</div>
             <div class="success-message" id="hourly-success"></div>
           </form>
@@ -377,9 +547,18 @@
               </div>
             </div>
 
-            <button type="submit" class="predict-btn" id="predict-btn">
-              Predict
-            </button>
+            <div class="button-container">
+              <button
+                type="button"
+                class="show-btn"
+                id="daily-show-btn"
+                onclick="toggleResults()">
+                Show
+              </button>
+              <button type="submit" class="predict-btn" id="daily-predict-btn">
+                Predict
+              </button>
+            </div>
 
             <div class="loading" id="daily-loading">Predicting...</div>
             <div class="success-message" id="daily-success"></div>
@@ -387,7 +566,7 @@
         </div>
       </div>
     </div>
-  
+
     <div class="container-bottom">
       <table class="table active">
         <thead>
@@ -415,91 +594,116 @@
       </table>
     </div>
     <script>
-function showTab(tabId) {
-    // Hide all forms
-    document.querySelectorAll(".form").forEach((tab) => tab.classList.remove("active"));
-    document.getElementById(tabId).classList.add("active");
+      function showTab(tabId) {
+        // Hide all forms
+        document
+          .querySelectorAll(".form")
+          .forEach((tab) => tab.classList.remove("active"));
+        document.getElementById(tabId).classList.add("active");
 
-    // Update active tab button
-    document.querySelectorAll(".tab-buttons button").forEach((button) => button.classList.remove("active"));
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
+        // Update active tab button
+        document
+          .querySelectorAll(".tab-buttons button")
+          .forEach((button) => button.classList.remove("active"));
+        document.querySelector(`[data-tab="${tabId}"]`).classList.add("active");
 
-    // Save active tab in localStorage
-    localStorage.setItem("activeTab", tabId);
-}
+        // Save active tab in localStorage
+        localStorage.setItem("activeTab", tabId);
+      }
 
-// Restore active tab on page load
-document.addEventListener("DOMContentLoaded", function () {
-    const savedTab = localStorage.getItem("activeTab") || "hourly"; // Default to 'hourly'
-    showTab(savedTab);
-});
+      // Restore active tab on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        const savedTab = localStorage.getItem("activeTab") || "hourly"; // Default to 'hourly'
+        showTab(savedTab);
+      });
 
-let isLoading = false;
+      let isLoading = false;
+      let isResultsVisible = false;
 
-function formatDateTime(date) {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0"); // Two-digit month
-    const day = String(d.getDate()).padStart(2, "0"); // Two-digit day
-    const hours = String(d.getHours()).padStart(2, "0"); // Two-digit hours
-    const minutes = String(d.getMinutes()).padStart(2, "0"); // Two-digit minutes
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-}
+      function formatDateTime(date) {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0"); // Two-digit month
+        const day = String(d.getDate()).padStart(2, "0"); // Two-digit day
+        const hours = String(d.getHours()).padStart(2, "0"); // Two-digit hours
+        const minutes = String(d.getMinutes()).padStart(2, "0"); // Two-digit minutes
+        return `${year}-${month}-${day} ${hours}:${minutes}`;
+      }
 
-async function handleFormSubmit(event, tabId) {
-    event.preventDefault();
-    if (isLoading) return;
+      function toggleResults() {
+        const containerBottom = document.querySelector(".container-bottom");
+        const showButtons = document.querySelectorAll(".show-btn");
 
-    isLoading = true;
+        if (isResultsVisible) {
+          // Hide results
+          containerBottom.style.display = "none";
+          showButtons.forEach((btn) => (btn.textContent = "Show"));
+          isResultsVisible = false;
+        } else {
+          // Show results
+          containerBottom.style.display = "block";
+          showButtons.forEach((btn) => (btn.textContent = "Hide"));
+          isResultsVisible = true;
+        }
+      }
 
-    const form = document.getElementById(tabId);
-    const loading = document.getElementById(`${tabId}-loading`);
-    const success = document.getElementById(`${tabId}-success`);
-    const resultsTable = document.getElementById("results");
-    const containerBottom = document.querySelector(".container-bottom");
+      async function handleFormSubmit(event, tabId) {
+        event.preventDefault();
+        if (isLoading) return;
 
-    loading.style.display = "block";
-    success.style.display = "none";
+        isLoading = true;
 
-    const formData = new FormData(form);
+        const form = document.getElementById(tabId);
+        const loading = document.getElementById(`${tabId}-loading`);
+        const success = document.getElementById(`${tabId}-success`);
+        const resultsTable = document.getElementById("results");
+        const containerBottom = document.querySelector(".container-bottom");
 
-    try {
-        const res = await fetch("/predict", {
+        loading.style.display = "block";
+        success.style.display = "none";
+
+        const formData = new FormData(form);
+
+        try {
+          const res = await fetch("/predict", {
             method: "POST",
             body: formData,
-        });
+          });
 
-        if (!res.ok) {
+          if (!res.ok) {
             console.log(`HTTP error! Status: ${res.status}`);
             return;
-        }
+          }
 
-        const data = await res.json();
-        console.log(data);
+          const data = await res.json();
+          console.log(data);
 
-        // Show success message
-        success.style.display = "block";
-        success.innerHTML = `Predicted NLDC demand: ${data.prediction.toFixed(2)}`;
+          // Show success message
+          success.style.display = "block";
+          success.innerHTML = `Predicted NLDC demand: ${data.prediction.toFixed(
+            2
+          )}`;
 
-        // Add prediction result to the table with formatted date
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = `
+          // Add prediction result to the table with formatted date
+          const newRow = document.createElement("tr");
+          newRow.innerHTML = `
             <td>${formatDateTime(new Date())}</td>
             <td class="capitalize">${tabId}</td>
             <td>${data.prediction.toFixed(2)}</td>
         `;
-        resultsTable.prepend(newRow); // Insert at the top
+          resultsTable.prepend(newRow); // Insert at the top
 
-        // Make sure the results container is visible
-        containerBottom.style.display = "block";
-    } catch (error) {
-        console.error("Error:", error);
-    } finally {
-        loading.style.display = "none";
-        isLoading = false;
-    }
-}
-
+          // Only show results if they are currently visible (controlled by Show/Hide button)
+          if (isResultsVisible) {
+            containerBottom.style.display = "block";
+          }
+        } catch (error) {
+          console.error("Error:", error);
+        } finally {
+          loading.style.display = "none";
+          isLoading = false;
+        }
+      }
     </script>
   </body>
 </html>
