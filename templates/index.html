@@ -479,9 +479,37 @@
         border-radius: 4px;
         font-size: 16px;
       }
+      .auth-links {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 100;
+      }
+      
+      .auth-links a {
+        color: #fff;
+        text-decoration: none;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding: 8px 15px;
+        border-radius: 4px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+      
+      .auth-links a:hover {
+        background-color: rgba(0, 0, 0, 0.7);
+        transform: translateY(-2px);
+      }
     </style>
   </head>
   <body>
+    <div class="auth-links">
+      {% if is_admin %}
+        <a href="{{ url_for('logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Admin Login</a>
+      {% endif %}
+    </div>
     <h1>Load Forecasting for Sylhet City</h1>
     <div class="container">
       <div>
@@ -584,12 +612,14 @@
                 onclick="toggleResults()">
                 Show
               </button>
+              {% if is_admin %}
               <button
                 type="button"
                 class="export-btn"
                 onclick="showExportModal()">
                 Export
               </button>
+              {% endif %}
               <button type="submit" class="predict-btn" id="hourly-predict-btn">
                 Predict
               </button>
@@ -680,12 +710,14 @@
                 onclick="toggleResults()">
                 Show
               </button>
+              {% if is_admin %}
               <button
                 type="button"
                 class="export-btn"
                 onclick="showExportModal()">
                 Export
               </button>
+              {% endif %}
               <button type="submit" class="predict-btn" id="daily-predict-btn">
                 Predict
               </button>

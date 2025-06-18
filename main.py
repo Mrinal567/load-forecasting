@@ -1,15 +1,58 @@
-from flask import Flask, request, jsonify, render_template, send_file
+from flask import Flask, request, jsonify, render_template, send_file, session, redirect, url_for, g
+from functools import wraps
+import os
 from datetime import datetime
+from threading import Thread
+import pytz
+import pandas as pd
+from io import BytesIO
 from DB import DB
 from auto_input import start_auto_input
 from model import predict_day, predict_hour
-import pytz
-import os
-from threading import Thread
-import pandas as pd
-from io import BytesIO
 
 app = Flask(__name__)
+
+# Add a secret key for session management
+app.secret_key = os.environ.get('SECRET_KEY', 'dev_key_for_testing')
+
+# Admin credentials (in a real app, store these securely, not in code)
+ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '@dmin')
+
+# Login decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user' not in session:
+            return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Check if user is admin
+def is_admin():
+    return 'user' in session and session['user'] == ADMIN_USERNAME
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    next_url = request.args.get('next', '/')
+    
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['user'] = username
+            return redirect(next_url)
+        else:
+            error = 'Invalid credentials'
+    
+    return render_template('login.html', error=error, next_url=next_url)
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('home'))
 
 # Initialize the database connection
 DB.init()
@@ -41,6 +84,7 @@ def home():
         history_daily=daily_predictions,
         last_hour=last_p['hourly'],
         last_day=last_p['daily'],
+        is_admin=is_admin()
     )
 
 
@@ -141,6 +185,7 @@ app.jinja_env.filters['strftime'] = format_datetime
 
 
 @app.route('/export-predictions', methods=['POST'])
+@login_required
 def export_predictions():
     try:
         prediction_type = request.form.get('type')
