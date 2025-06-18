@@ -103,7 +103,7 @@ class DB:
 
     @staticmethod
     def get_predictions():
-        sql = "SELECT * FROM predictions ORDER BY timestamp DESC LIMIT 50"
+        sql = "SELECT * FROM predictions ORDER BY timestamp DESC"
 
         try:
             cursor = DB.get_connection().cursor()
@@ -157,3 +157,74 @@ class DB:
             predictions[row[0]] = round(row[1], 2)
 
         return predictions
+
+    @staticmethod
+    def get_readings_for_timestamps(timestamps):
+        """
+        Get temperature and humidity readings closest to the given timestamps
+        
+        Args:
+            timestamps: List of timestamp strings in format 'YYYY-MM-DD HH:MM:SS'
+            
+        Returns:
+            Dictionary with timestamp as key and {temperature, humidity} as value
+        """
+        if not timestamps:
+            return {}
+            
+        # Create placeholders for the SQL query
+        placeholders = ', '.join(['?'] * len(timestamps))
+        
+        sql = f"""
+        WITH RankedReadings AS (
+            SELECT
+                r.timestamp as reading_timestamp,
+                t.timestamp as target_timestamp,
+                r.temperature,
+                r.humidity,
+                ROW_NUMBER() OVER (
+                    PARTITION BY t.timestamp
+                    ORDER BY ABS(julianday(r.timestamp) - julianday(t.timestamp))
+                ) as rank
+            FROM
+                (SELECT ? as timestamp) t
+            CROSS JOIN
+                readings r
+        )
+        SELECT
+            target_timestamp,
+            temperature,
+            humidity
+        FROM
+            RankedReadings
+        WHERE
+            rank = 1
+        """
+        
+        result = {}
+        connection = DB.get_connection()
+        cursor = connection.cursor()
+        
+        # Execute query for each timestamp individually to get closest reading
+        for timestamp in timestamps:
+            try:
+                cursor.execute(sql, (timestamp,))
+                row = cursor.fetchone()
+                if row:
+                    result[timestamp] = {
+                        'temperature': row[1],
+                        'humidity': row[2]
+                    }
+                else:
+                    result[timestamp] = {
+                        'temperature': None,
+                        'humidity': None
+                    }
+            except Error as e:
+                print(f"Error fetching readings for timestamp {timestamp}: {e}")
+                result[timestamp] = {
+                    'temperature': None,
+                    'humidity': None
+                }
+        
+        return result

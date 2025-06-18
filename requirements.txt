@@ -8,3 +8,4 @@ Scikit-learn
 Keras
 schedule
 gunicorn
+openpyxl

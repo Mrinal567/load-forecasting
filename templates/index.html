@@ -237,13 +237,13 @@
         box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
         transition: background 0.3s ease;
       }
-      button:hover {
+      /* button:hover {
         background: linear-gradient(to right, #06ef0e, #022704);
         transition: background 0.3s ease;
         transition: color 0.3s ease;
         transition: transform 0.3s ease;
         color: white;
-      }
+      } */
       .predict-btn {
         background: #f00c0c;
         transition: background 0.3s ease;
@@ -376,6 +376,109 @@
         margin-bottom: 8px;
         padding: 10px 0;
       }
+      .export-btn {
+        background: #28a745;
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: 0.3s ease;
+        color: white;
+        width: 100px;
+        float: right;
+        margin: 10px 0 10px 10px;
+        padding: 12px 20px;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease-in-out;
+        box-shadow: 0 4px 6px rgba(40, 167, 69, 0.2);
+      }
+      .export-download{
+        background: #007bff;
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: 0.3s ease;
+        color: white;
+      
+        float: right;
+        margin-bottom: 100px;
+        padding: 12px 20px;
+        border: none;
+        cursor: pointer;
+
+        
+      }
+      .export-download:hover {
+        background: #0056b3;
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: transform 0.3s ease;
+        color: white;
+      }
+      .export-btn:hover {
+        background: #218838;
+        transition: background 0.3s ease;
+        transition: color 0.3s ease;
+        transition: transform 0.3s ease;
+        color: white;
+      }
+
+      /* Modal styles */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0,0,0,0.4);
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 400px;
+        min-height:220px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+
+      .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+      }
     </style>
   </head>
   <body>
@@ -481,6 +584,12 @@
                 onclick="toggleResults()">
                 Show
               </button>
+              <button
+                type="button"
+                class="export-btn"
+                onclick="showExportModal()">
+                Export
+              </button>
               <button type="submit" class="predict-btn" id="hourly-predict-btn">
                 Predict
               </button>
@@ -571,6 +680,12 @@
                 onclick="toggleResults()">
                 Show
               </button>
+              <button
+                type="button"
+                class="export-btn"
+                onclick="showExportModal()">
+                Export
+              </button>
               <button type="submit" class="predict-btn" id="daily-predict-btn">
                 Predict
               </button>
@@ -634,6 +749,24 @@
           </tbody>
           
         </table>
+      </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeExportModal()">&times;</span>
+        <h2>Export Predictions</h2>
+        <form id="exportForm" onsubmit="handleExport(event)">
+          <div class="form-group">
+            <label for="exportType">Select prediction type:</label>
+            <select id="exportType" name="type" required>
+              <option value="hourly">Hourly</option>
+              <option value="daily">Daily</option>
+            </select>
+          </div>
+          <button type="submit" class="export-download">Download Excel</button>
+        </form>
       </div>
     </div>
 
@@ -757,7 +890,76 @@
         }
       }
 
-   
+      // Export modal functions
+      function showExportModal() {
+        document.getElementById('exportModal').style.display = 'block';
+      }
+
+      function closeExportModal() {
+        document.getElementById('exportModal').style.display = 'none';
+      }
+
+      // Close modal if clicked outside
+      window.onclick = function(event) {
+        const modal = document.getElementById('exportModal');
+        if (event.target === modal) {
+          modal.style.display = 'none';
+        }
+      }
+
+      async function handleExport(event) {
+        event.preventDefault();
+        
+        const form = document.getElementById('exportForm');
+        const formData = new FormData(form);
+        
+        try {
+          // Submit form and trigger file download
+          const response = await fetch('/export-predictions', {
+            method: 'POST',
+            body: formData
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            alert(`Export failed: ${errorData.error}`);
+            return;
+          }
+          
+          // Get the filename from the Content-Disposition header if available
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let filename = 'predictions.xlsx';
+          if (contentDisposition) {
+            const filenameMatch = contentDisposition.match(/filename="?([^"]*)"?/);
+            if (filenameMatch && filenameMatch[1]) {
+              filename = filenameMatch[1];
+            }
+          }
+          
+          // Create a blob from the response
+          const blob = await response.blob();
+          
+          // Create a link to download the file
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          
+          // Clean up
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          // Close the modal
+          closeExportModal();
+          
+        } catch (error) {
+          console.error('Export error:', error);
+          alert('An error occurred during export. Please try again.');
+        }
+      }
     </script>
   </body>
 </html>
