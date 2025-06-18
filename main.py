@@ -4,6 +4,8 @@ from DB import DB
 from auto_input import start_auto_input
 from model import predict_day, predict_hour
 import pytz
+import os
+from threading import Thread
 
 app = Flask(__name__)
 
@@ -12,11 +14,19 @@ DB.init()
 
 TIMEZONE = pytz.timezone('Asia/Dhaka')
 
+
 @app.route("/")
 def home():
     now = datetime.now(TIMEZONE)
     data = DB.get_data()
     last_p = DB.get_closest_predictions()
+    all_predictions = DB.get_predictions()
+
+    hourly_predictions = [
+        p for p in all_predictions if p['type'] == 'hourly'][:25]
+    daily_predictions = [
+        p for p in all_predictions if p['type'] == 'daily'][:25]
+
     return render_template(
         "index.html",
         year=now.year,
@@ -25,10 +35,12 @@ def home():
         hour=now.hour,
         humidity=data['humidity'],
         temperature=data['temperature'],
-        history=DB.get_predictions(),
+        history_hourly=hourly_predictions,
+        history_daily=daily_predictions,
         last_hour=last_p['hourly'],
         last_day=last_p['daily'],
     )
+
 
 @app.route('/insert', methods=['POST'])
 def insert_data():
@@ -54,6 +66,7 @@ def insert_data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/predict', methods=['POST'])
 def predict():
     hour = request.form.get('hour')
@@ -66,7 +79,8 @@ def predict():
 
     try:
         if hour:
-            user_input = [nldc_demand, temperature, humidity, hour, day, month, year]
+            user_input = [nldc_demand, temperature,
+                          humidity, hour, day, month, year]
             prediction = predict_hour(user_input)
         else:
             user_input = [nldc_demand, temperature, humidity, day, month, year]
@@ -80,11 +94,12 @@ def predict():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 @app.route('/readings', methods=['GET'])
 def get_readings():
     try:
         page = int(request.args.get('page', 1))
-        limit = int(request.args.get('limit', 10))
+        limit = int(request.args.get('limit', 50))
         sort_by = request.args.get('sort_by', 'timestamp')
         order = request.args.get('order', 'desc')
         device_id = request.args.get('device_id')
@@ -112,15 +127,20 @@ def get_readings():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
 def format_datetime(value, format="%Y-%m-%d %H:%M"):
     if not isinstance(value, datetime):
         value = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
     value = value.replace(tzinfo=pytz.utc).astimezone(TIMEZONE)
     return value.strftime(format)
 
+
 app.jinja_env.filters['strftime'] = format_datetime
 
-start_auto_input()
 
 if __name__ == "__main__":
+    # Start scheduler only if not in reloader
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        Thread(target=start_auto_input, daemon=True).start()
+
     app.run(debug=True, host="0.0.0.0", port=3000)

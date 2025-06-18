@@ -297,14 +297,14 @@
       .loading {
         display: none;
         margin-top: 10px;
-        color: #030303;
+        color: rgb(5, 13, 230);
         font-weight: bold;
       }
       .success-message {
         display: none;
         margin-top: 10px;
 
-        color: #030303;
+        color: rgb(5, 13, 230);
         font-weight: bold;
       }
       .container-bottom {
@@ -365,6 +365,17 @@
       .capitalize {
         text-transform: capitalize;
       }
+      .table-bar-head {
+        background: #288e2d;
+        /* background: linear-gradient(to right, #1eba23, #044907); */
+        color: white;
+      
+        text-align: center;
+        border-radius: 5px;
+        font-size: 16px;
+        margin-bottom: 8px;
+        padding: 10px 0;
+      }
     </style>
   </head>
   <body>
@@ -381,6 +392,7 @@
             </button>
             <button data-tab="daily" onclick="showTab('daily')">Daily</button>
           </div>
+
           <form
             id="hourly"
             class="form active"
@@ -473,7 +485,11 @@
                 Predict
               </button>
             </div>
-            <div class="loading" id="hourly-loading">Predicting...</div>
+            <div class="loading" id="hourly-loading">
+              <span class="spinner"></span>
+              Predicting...
+            </div>
+            
             <div class="success-message" id="hourly-success"></div>
           </form>
 
@@ -567,32 +583,60 @@
       </div>
     </div>
 
-    <div class="container-bottom">
-      <table class="table active">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Type</th>
-            <th>Prediction</th>
-          </tr>
-        </thead>
-        <tbody id="results">
-          {% if history %} {% for record in history %}
-          <tr>
-            <td>{{ record.timestamp | strftime }}</td>
-            <td class="capitalize">{{ record.type }}</td>
-            <td>{{ record.prediction | round(2) }}</td>
-          </tr>
-          {% endfor %} {% else %}
-          <tr>
-            <td>--</td>
-            <td>--</td>
-            <td>--</td>
-          </tr>
-          {% endif %}
-        </tbody>
-      </table>
+    <div class="container-bottom" style="display: none; gap: 20px">
+      <!-- Hourly Predictions Table -->
+      <div style="flex: 1">
+        <div class="table-bar">
+          <h3 class="table-bar-head">Hourly Predictions</h3>
+        </div>
+        <table class="table active" style="width: 100%">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Prediction</th>
+            </tr>
+          </thead>
+          <tbody id="results-hourly">
+            {% for record in history_hourly %}
+            <tr>
+              <td>{{ record.timestamp | strftime }}</td>
+              <td class="capitalize">{{ record.type }}</td>
+              <td>{{ record.prediction | round(2) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          
+        </table>
+      </div>
+
+      <!-- Daily Predictions Table -->
+      <div style="flex: 1">
+        <div class="table-bar">
+          <h3 class="table-bar-head">Daily Predictions</h3>
+        </div>
+        <table class="table active" style="width: 100%">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Prediction</th>
+            </tr>
+          </thead>
+          <tbody id="results-daily">
+            {% for record in history_daily %}
+            <tr>
+              <td>{{ record.timestamp | strftime }}</td>
+              <td class="capitalize">{{ record.type }}</td>
+              <td>{{ record.prediction | round(2) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          
+        </table>
+      </div>
     </div>
+
     <script>
       function showTab(tabId) {
         // Hide all forms
@@ -611,22 +655,19 @@
         localStorage.setItem("activeTab", tabId);
       }
 
-      // Restore active tab on page load
-      document.addEventListener("DOMContentLoaded", function () {
-        const savedTab = localStorage.getItem("activeTab") || "hourly"; // Default to 'hourly'
-        showTab(savedTab);
-      });
-
+     
+      // Also run it once on page load
+    
       let isLoading = false;
       let isResultsVisible = false;
 
       function formatDateTime(date) {
         const d = new Date(date);
         const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, "0"); // Two-digit month
-        const day = String(d.getDate()).padStart(2, "0"); // Two-digit day
-        const hours = String(d.getHours()).padStart(2, "0"); // Two-digit hours
-        const minutes = String(d.getMinutes()).padStart(2, "0"); // Two-digit minutes
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const hours = String(d.getHours()).padStart(2, "0");
+        const minutes = String(d.getMinutes()).padStart(2, "0");
         return `${year}-${month}-${day} ${hours}:${minutes}`;
       }
 
@@ -641,7 +682,7 @@
           isResultsVisible = false;
         } else {
           // Show results
-          containerBottom.style.display = "block";
+          containerBottom.style.display = "flex";
           showButtons.forEach((btn) => (btn.textContent = "Hide"));
           isResultsVisible = true;
         }
@@ -656,7 +697,8 @@
         const form = document.getElementById(tabId);
         const loading = document.getElementById(`${tabId}-loading`);
         const success = document.getElementById(`${tabId}-success`);
-        const resultsTable = document.getElementById("results");
+        const resultsHourly = document.getElementById("results-hourly");
+        const resultsDaily = document.getElementById("results-daily");
         const containerBottom = document.querySelector(".container-bottom");
 
         loading.style.display = "block";
@@ -680,22 +722,32 @@
 
           // Show success message
           success.style.display = "block";
-          success.innerHTML = `Predicted NLDC demand: ${data.prediction.toFixed(
-            2
-          )}`;
+          success.innerHTML = `Predicted NLDC demand: ${data.prediction.toFixed(2)}`;
 
-          // Add prediction result to the table with formatted date
+          // Create new row element
           const newRow = document.createElement("tr");
           newRow.innerHTML = `
             <td>${formatDateTime(new Date())}</td>
             <td class="capitalize">${tabId}</td>
             <td>${data.prediction.toFixed(2)}</td>
-        `;
-          resultsTable.prepend(newRow); // Insert at the top
+          `;
 
-          // Only show results if they are currently visible (controlled by Show/Hide button)
+          // Add new row and remove last row if more than 25
+          if (tabId === "hourly") {
+            resultsHourly.prepend(newRow);
+            if (resultsHourly.children.length > 25) {
+              resultsHourly.removeChild(resultsHourly.lastChild);
+            }
+          } else if (tabId === "daily") {
+            resultsDaily.prepend(newRow);
+            if (resultsDaily.children.length > 25) {
+              resultsDaily.removeChild(resultsDaily.lastChild);
+            }
+          }
+
+          // Only show results if currently visible
           if (isResultsVisible) {
-            containerBottom.style.display = "block";
+            containerBottom.style.display = "flex";
           }
         } catch (error) {
           console.error("Error:", error);
@@ -704,6 +756,8 @@
           isLoading = false;
         }
       }
+
+   
     </script>
   </body>
 </html>

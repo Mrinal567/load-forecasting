@@ -103,7 +103,7 @@ class DB:
 
     @staticmethod
     def get_predictions():
-        sql = "SELECT * FROM predictions ORDER BY timestamp DESC LIMIT 25"
+        sql = "SELECT * FROM predictions ORDER BY timestamp DESC LIMIT 50"
 
         try:
             cursor = DB.get_connection().cursor()
