@@ -130,8 +130,8 @@ def run_schedule():
     schedule.clear()
 
     # Schedule jobs
-    schedule.every(1).hour.at(":00").do(give_hourly_prompt)  # Run hourly predictions every hour
-    schedule.every().day.at("00:00").do(give_daily_prompt)   # Run daily predictions at midnight
+    schedule.every(1).minutes.do(give_hourly_prompt)  # Run hourly predictions every hour
+    schedule.every(1).minutes.do(give_daily_prompt)   # Run daily predictions at midnight
 
     logger.info("Jobs scheduled: hourly predictions every hour and daily predictions every day")
 
@@ -150,14 +150,14 @@ def run_schedule():
             # Don't exit the loop on error, just continue
 
 
-def start_auto_input():
+def start_auto_input(daemon=True):
     """Start the auto-input scheduler in a separate thread"""
     try:
         logger.info("Starting auto-input scheduler")
         scheduler_thread = Thread(target=run_schedule)
-        scheduler_thread.daemon = True
+        scheduler_thread.daemon = daemon  # Allow caller to control daemon status
         scheduler_thread.start()
-        logger.info(f"Scheduler thread started: {scheduler_thread.name}")
+        logger.info(f"Scheduler thread started: {scheduler_thread.name}, daemon: {scheduler_thread.daemon}")
         return scheduler_thread
     except Exception as e:
         logger.error(f"Failed to start scheduler thread: {str(e)}")
