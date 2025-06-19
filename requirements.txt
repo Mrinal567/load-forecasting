@@ -1,11 +1,11 @@
-flask
-Tensorflow
+Flask
+TensorFlow
 Joblib
 Numpy
 Pandas
-Flask
 Scikit-learn
 Keras
 schedule
 gunicorn
 openpyxl
+pytz

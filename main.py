@@ -261,4 +261,5 @@ if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         Thread(target=start_auto_input, daemon=True).start()
 
-    app.run(debug=True, host="0.0.0.0", port=3000)
+    # Use port 8000 to match Dockerfile
+    app.run(debug=False, host="0.0.0.0", port=8000)
