@@ -118,6 +118,7 @@ def insert_data():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    # Get form data
     hour = request.form.get('hour')
     day = request.form.get('day')
     month = request.form.get('month')
@@ -126,21 +127,56 @@ def predict():
     temperature = request.form.get('temperature')
     humidity = request.form.get('humidity')
 
+    # Add debug logging
+    print(f"Received prediction request with data:")
+    print(f"hour: {hour}, day: {day}, month: {month}, year: {year}")
+    print(f"demand: {nldc_demand}, temperature: {temperature}, humidity: {humidity}")
+
     try:
+        # Convert all inputs to float
         if hour:
-            user_input = [nldc_demand, temperature,
-                          humidity, hour, day, month, year]
+            user_input = [
+                float(nldc_demand), 
+                float(temperature),
+                float(humidity), 
+                float(hour), 
+                float(day), 
+                float(month), 
+                float(year)
+            ]
+            print(f"Calling predict_hour with input: {user_input}")
             prediction = predict_hour(user_input)
         else:
-            user_input = [nldc_demand, temperature, humidity, day, month, year]
+            user_input = [
+                float(nldc_demand), 
+                float(temperature), 
+                float(humidity), 
+                float(day), 
+                float(month), 
+                float(year)
+            ]
+            print(f"Calling predict_day with input: {user_input}")
             prediction = predict_day(user_input)
 
-        DB.insert_data('predictions', {
+        print(f"Prediction result: {prediction}")
+        
+        # Insert the prediction into the database
+        inserted_id = DB.insert_data('predictions', {
             'type': 'hourly' if hour else 'daily',
-            'prediction': prediction,
+            'prediction': float(prediction),
         })
-        return jsonify({"prediction": prediction, "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}), 200
+        
+        print(f"Inserted prediction into database with ID: {inserted_id}")
+        
+        # Return the prediction as JSON
+        return jsonify({
+            "prediction": float(prediction), 
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }), 200
     except Exception as e:
+        print(f"Prediction error: {str(e)}")
+        import traceback
+        traceback.print_exc()  # Print full traceback
         return jsonify({"error": str(e)}), 500
 
 
@@ -257,9 +293,27 @@ def export_predictions():
 
 
 if __name__ == "__main__":
-    # Start scheduler only if not in reloader
-    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        Thread(target=start_auto_input, daemon=True).start()
-
-    # Use port 8000 to match Dockerfile
+    print("Starting application...")
+    
+    # Initialize database
+    print("Initializing database...")
+    DB.init()
+    
+    # Start scheduler - modified condition to work in production
+    print("Starting auto-prediction scheduler...")
+    try:
+        # In development with reloader, only start in the main process
+        if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
+            scheduler_thread = Thread(target=start_auto_input, daemon=True)
+            scheduler_thread.start()
+            print("Auto-prediction scheduler started successfully.")
+        else:
+            print("Skipping scheduler start (in reloader process)")
+    except Exception as e:
+        print(f"Error starting scheduler: {e}")
+        import traceback
+        traceback.print_exc()
+    
+    # Run the Flask app
+    print(f"Starting Flask app on port 8000")
     app.run(debug=False, host="0.0.0.0", port=8000)
