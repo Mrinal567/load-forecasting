@@ -12,10 +12,10 @@ from model import predict_day, predict_hour
 
 app = Flask(__name__)
 
-# Add a secret key for session management
+# Secret key for session management
 app.secret_key = os.environ.get('SECRET_KEY', 'dev_key_for_testing')
 
-# Admin credentials (in a real app, store these securely, not in code)
+# Admin credentials
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '@dmin')
 
@@ -30,8 +30,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Check if user is admin
-
 
 def is_admin():
     return 'user' in session and session['user'] == ADMIN_USERNAME
@@ -41,17 +39,14 @@ def is_admin():
 def login():
     error = None
     next_url = request.args.get('next', '/')
-
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
         if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
             session['user'] = username
             return redirect(next_url)
         else:
             error = 'Invalid credentials'
-
     return render_template('login.html', error=error, next_url=next_url)
 
 
@@ -61,9 +56,8 @@ def logout():
     return redirect(url_for('home'))
 
 
-# Initialize the database connection
+# Initialize the database
 DB.init()
-
 TIMEZONE = pytz.timezone('Asia/Dhaka')
 
 
@@ -78,9 +72,7 @@ def home():
         p for p in all_predictions if p['type'] == 'hourly'][:25]
     daily_predictions = [
         p for p in all_predictions if p['type'] == 'daily'][:25]
-
-    # Use a default value if no previous predictions are available
-    default_value = 100  # You can adjust this default value as needed
+    default_value = 100
 
     return render_template(
         "index.html",
@@ -125,7 +117,6 @@ def insert_data():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    # Get form data
     hour = request.form.get('hour')
     day = request.form.get('day')
     month = request.form.get('month')
@@ -134,14 +125,7 @@ def predict():
     temperature = request.form.get('temperature')
     humidity = request.form.get('humidity')
 
-    # Add debug logging
-    print(f"Received prediction request with data:")
-    print(f"hour: {hour}, day: {day}, month: {month}, year: {year}")
-    print(
-        f"demand: {nldc_demand}, temperature: {temperature}, humidity: {humidity}")
-
     try:
-        # Convert all inputs to float
         if hour:
             user_input = [
                 float(nldc_demand),
@@ -152,7 +136,6 @@ def predict():
                 float(month),
                 float(year)
             ]
-            print(f"Calling predict_hour with input: {user_input}")
             prediction = predict_hour(user_input)
         else:
             user_input = [
@@ -163,28 +146,20 @@ def predict():
                 float(month),
                 float(year)
             ]
-            print(f"Calling predict_day with input: {user_input}")
             prediction = predict_day(user_input)
 
-        print(f"Prediction result: {prediction}")
-
-        # Insert the prediction into the database
         inserted_id = DB.insert_data('predictions', {
             'type': 'hourly' if hour else 'daily',
             'prediction': float(prediction),
         })
 
-        print(f"Inserted prediction into database with ID: {inserted_id}")
-
-        # Return the prediction as JSON
         return jsonify({
             "prediction": float(prediction),
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }), 200
     except Exception as e:
-        print(f"Prediction error: {str(e)}")
         import traceback
-        traceback.print_exc()  # Print full traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
 
 
@@ -239,7 +214,6 @@ def export_predictions():
         if prediction_type not in ['hourly', 'daily']:
             return jsonify({"error": "Invalid prediction type"}), 400
 
-        # Get all predictions of the specified type
         all_predictions = DB.get_predictions()
         filtered_predictions = [
             p for p in all_predictions if p['type'] == prediction_type]
@@ -247,17 +221,11 @@ def export_predictions():
         if not filtered_predictions:
             return jsonify({"error": "No predictions found for the selected type"}), 404
 
-        # Create DataFrame
         df = pd.DataFrame(filtered_predictions)
-
-        # Format timestamp
         df['timestamp'] = pd.to_datetime(df['timestamp'])
-
-        # Get actual temperature and humidity for each prediction timestamp
         timestamps = [p['timestamp'] for p in filtered_predictions]
         readings_data = DB.get_readings_for_timestamps(timestamps)
 
-        # Add temperature and humidity to DataFrame
         temperature_values = []
         humidity_values = []
 
@@ -270,30 +238,22 @@ def export_predictions():
         df['temperature'] = temperature_values
         df['humidity'] = humidity_values
         df['formatted_date'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M')
-
-        # Round prediction to 2 decimal places
         df['prediction'] = df['prediction'].round(2)
 
-        # Select and rename columns
         df = df[['formatted_date', 'type',
                  'humidity', 'temperature', 'prediction']]
         df.columns = ['Date', 'Type', 'Humidity', 'Temperature', 'Prediction']
 
-        # Create Excel file in memory
         output = BytesIO()
         with pd.ExcelWriter(output, engine='openpyxl') as writer:
             df.to_excel(writer, index=False,
                         sheet_name=f'{prediction_type.capitalize()} Predictions')
-
-            # Access the worksheet to format the prediction column
             worksheet = writer.sheets[f'{prediction_type.capitalize()} Predictions']
-            # Column E is Prediction, start from row 2 (skip header)
             for idx, cell in enumerate(worksheet['E'][1:], 2):
                 cell.number_format = '0.00'
 
         output.seek(0)
 
-        # Return the Excel file
         return send_file(
             output,
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -301,32 +261,21 @@ def export_predictions():
             download_name=f'{prediction_type}_predictions.xlsx'
         )
     except Exception as e:
-        print(f"Export error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 
-if __name__ == "__main__":
-    print("Starting application...")
-
-    # Initialize database
-    print("Initializing database...")
-    DB.init()
-
-    # Start scheduler - modified condition to work in production
+# ✅ Always start scheduler (works with Gunicorn too)
+try:
     print("Starting auto-prediction scheduler...")
-    try:
-        # In development with reloader, only start in the main process
-        if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
-            scheduler_thread = Thread(target=start_auto_input, daemon=True)
-            scheduler_thread.start()
-            print("Auto-prediction scheduler started successfully.")
-        else:
-            print("Skipping scheduler start (in reloader process)")
-    except Exception as e:
-        print(f"Error starting scheduler: {e}")
-        import traceback
-        traceback.print_exc()
+    scheduler_thread = Thread(target=start_auto_input, daemon=True)
+    scheduler_thread.start()
+    print("Auto-prediction scheduler started successfully.")
+except Exception as e:
+    print(f"Error starting scheduler: {e}")
+    import traceback
+    traceback.print_exc()
 
-    # Run the Flask app
-    print(f"Starting Flask app on port 8000")
+# ✅ For development only
+if __name__ == "__main__":
+    print(f"Starting Flask app on port 8000 (DEV MODE)")
     app.run(debug=False, host="0.0.0.0", port=8000)
