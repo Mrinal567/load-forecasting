@@ -5,7 +5,7 @@ services:
     build: .
     ports:
       - "8000:8000"
-    command: gunicorn -w 4 -b 0.0.0.0:8000 main:app
+    command: gunicorn --preload --when-ready gunicorn_hooks:when_ready -w 4 -b 0.0.0.0:8000 main:app
     restart: always
     logging:
       driver: "json-file"
@@ -13,20 +13,17 @@ services:
         max-size: "10m"
         max-file: "3"
     
-  scheduler:
-    build: .
-    command: python scheduler.py
-    restart: on-failure
-    restart_policy:
-      condition: on-failure
-      delay: 5s
-      max_attempts: 3
-      window: 120s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+  # Comment out or remove the scheduler service if you're using Gunicorn hooks
+  # scheduler:
+  #   build: .
+  #   command: python scheduler.py
+  #   restart: on-failure
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
     volumes:
       - ./logs:/tmp
+
 

@@ -9,6 +9,7 @@ from io import BytesIO
 from DB import DB
 from auto_input import start_auto_input
 from model import predict_day, predict_hour
+import threading
 
 app = Flask(__name__)
 
@@ -291,6 +292,41 @@ def export_predictions():
         print(f"Export error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+# Global variable to track if scheduler is running
+scheduler_running = False
+scheduler_lock = threading.Lock()
+
+# Function to start scheduler exactly once
+def ensure_scheduler_running():
+    global scheduler_running
+    
+    with scheduler_lock:
+        if not scheduler_running:
+            print("Starting auto-prediction scheduler...")
+            try:
+                # Use non-daemon thread in production to prevent it from being killed
+                scheduler_thread = start_auto_input(daemon=False)
+                scheduler_running = True
+                print(f"Auto-prediction scheduler started: {scheduler_thread.name}")
+            except Exception as e:
+                print(f"Error starting scheduler: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print("Scheduler already running, skipping initialization")
+
+# Comment out or remove this code if you're using Gunicorn hooks
+# @app.before_request
+# def initialize_scheduler_if_needed():
+#     """Start the scheduler on the first request"""
+#     ensure_scheduler_running()
+
+# with app.app_context():
+#     # Initialize the database connection
+#     DB.init()
+#     
+#     # Start the scheduler once during app initialization
+#     ensure_scheduler_running()
 
 if __name__ == "__main__":
     print("Starting application...")
