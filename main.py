@@ -269,18 +269,7 @@ def export_predictions():
         return jsonify({"error": str(e)}), 500
 
 
-# ✅ Always start scheduler (works with Gunicorn too)
-try:
-    print("Starting auto-prediction scheduler...")
-    scheduler_thread = Thread(target=start_auto_input, daemon=True)
-    scheduler_thread.start()
-    print("Auto-prediction scheduler started successfully.")
-except Exception as e:
-    print(f"Error starting scheduler: {e}")
-    import traceback
-    traceback.print_exc()
+start_auto_input()
 
-# ✅ For development only
 if __name__ == "__main__":
-    print(f"Starting Flask app on port 8000 (DEV MODE)")
-    app.run(debug=False, host="0.0.0.0", port=8000)
+    app.run(debug=True, host="0.0.0.0", port=3000)
