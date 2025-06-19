@@ -90,6 +90,11 @@ def home():
     )
 
 
+@app.route("/check")
+def check_scheduler():
+    return jsonify({"status": "Scheduler running (if you see this, app loaded successfully)"}), 200
+
+
 @app.route('/insert', methods=['POST'])
 def insert_data():
     try:
