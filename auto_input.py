@@ -61,7 +61,7 @@ def start_auto_input():
         return
     # Schedule the jobs only once
     schedule.every(1).hours.do(give_hourly_prompt)
-    schedule.every(1).days.do(give_daily_prompt)
+    schedule.every(1).hours.do(give_daily_prompt)
 
     scheduler_thread = Thread(target=run_schedule)
     scheduler_thread.daemon = True
