@@ -5,7 +5,7 @@ import os
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), "models")  # Get the directory of the current file
 lstm_model_hr_path = os.path.join(MODEL_DIR, "1_hour.h5")
-lstm_model_day_path = os.path.join(MODEL_DIR, "1_day.h5")
+lstm_model_day_path = os.path.join(MODEL_DIR, "1_day_model.h5")
 scaler_hr_path = os.path.join(MODEL_DIR, "scaler_hour.pkl")
 scaler_day_path = os.path.join(MODEL_DIR, "scaler_day.pkl")
 

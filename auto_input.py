@@ -16,14 +16,22 @@ def predict(hourly=False):
     last_vals = DB.get_closest_predictions()
     now = datetime.datetime.now()
     result = None
-    if hourly and last_vals.get('hourly'):
-        user_input = [last_vals['hourly'], data['temperature'],
+    
+    # For hourly predictions
+    if hourly:
+        # Use the previous hourly prediction if available, otherwise use daily or a default value
+        previous_demand = last_vals.get('hourly') or last_vals.get('daily') or 100  # Default value if no previous predictions
+        user_input = [previous_demand, data['temperature'],
                       data['humidity'], now.hour, now.day, now.month, now.year]
         result = predict_hour(user_input)
-    elif not hourly and last_vals.get('daily'):
-        user_input = [last_vals['daily'], data['temperature'],
+    # For daily predictions
+    else:
+        # Use the previous daily prediction if available, otherwise use hourly or a default value
+        previous_demand = last_vals.get('daily') or last_vals.get('hourly') or 100  # Default value if no previous predictions
+        user_input = [previous_demand, data['temperature'],
                       data['humidity'], now.day, now.month, now.year]
         result = predict_day(user_input)
+        
     if result:
         DB.insert_data('predictions', {
             'type': 'hourly' if hourly else 'daily',

@@ -127,8 +127,7 @@ class DB:
                 prediction
             FROM predictions
             WHERE type = 'hourly'
-            AND timestamp >= datetime('now', '-1 hour')
-            ORDER BY ABS(strftime('%s', timestamp) - strftime('%s', 'now')) ASC
+            ORDER BY timestamp DESC  -- Get the most recent hourly prediction
             LIMIT 1
         ),
         DailyClosest AS (
@@ -136,8 +135,7 @@ class DB:
                 prediction
             FROM predictions
             WHERE type = 'daily'
-            AND timestamp >= datetime('now', '-24 hours')
-            ORDER BY ABS(strftime('%s', timestamp) - strftime('%s', 'now')) ASC
+            ORDER BY timestamp DESC  -- Get the most recent daily prediction
             LIMIT 1
         )
         SELECT 'hourly' AS type, prediction FROM HourlyClosest

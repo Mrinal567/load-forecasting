@@ -65,13 +65,16 @@ def home():
     now = datetime.now(TIMEZONE)
     data = DB.get_data()
     last_p = DB.get_closest_predictions()
-    all_predictions = DB.get_predictions()
+    all_predictions = DB.get_predictions() or []
 
     hourly_predictions = [
         p for p in all_predictions if p['type'] == 'hourly'][:25]
     daily_predictions = [
         p for p in all_predictions if p['type'] == 'daily'][:25]
 
+    # Use a default value if no previous predictions are available
+    default_value = 100  # You can adjust this default value as needed
+    
     return render_template(
         "index.html",
         year=now.year,
@@ -82,8 +85,8 @@ def home():
         temperature=data['temperature'],
         history_hourly=hourly_predictions,
         history_daily=daily_predictions,
-        last_hour=last_p['hourly'],
-        last_day=last_p['daily'],
+        last_hour=last_p.get('hourly') or default_value,
+        last_day=last_p.get('daily') or default_value,
         is_admin=is_admin()
     )
 
