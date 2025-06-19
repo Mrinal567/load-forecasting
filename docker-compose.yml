@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    command: gunicorn -w 4 -b 0.0.0.0:8000 main:app
+    restart: always
+    
+  scheduler:
+    build: .
+    command: python scheduler.py
+    restart: always

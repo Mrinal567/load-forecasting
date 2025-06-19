@@ -299,7 +299,8 @@ if __name__ == "__main__":
     print("Initializing database...")
     DB.init()
     
-    # Start scheduler - modified condition to work in production
+    # Start scheduler - only used in development
+    # In production, the scheduler runs as a separate service (see scheduler.py)
     print("Starting auto-prediction scheduler...")
     try:
         # In development with reloader, only start in the main process
