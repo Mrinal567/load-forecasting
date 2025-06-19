@@ -130,15 +130,15 @@ def run_schedule():
     schedule.clear()
 
     # Schedule jobs
-    schedule.every(1).hour.at(":00").do(give_hourly_prompt)           # Run hourly predictions every hour
+    schedule.every(1).hour.at(":00").do(give_hourly_prompt)  # Run hourly predictions every hour
     schedule.every().day.at("00:00").do(give_daily_prompt)   # Run daily predictions at midnight
 
     logger.info("Jobs scheduled: hourly predictions every hour and daily predictions every day")
 
-    # Run immediately on startup
-    logger.info("Running initial predictions")
-    give_hourly_prompt()
-    give_daily_prompt()
+    # Remove these lines to prevent immediate predictions on startup
+    # logger.info("Running initial predictions")
+    # give_hourly_prompt()
+    # give_daily_prompt()
 
     # Main scheduler loop
     while True:
