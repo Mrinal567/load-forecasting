@@ -40,6 +40,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            docker system prune -af --volumes
             docker pull rnium/lforecast:latest
             docker stop lfcast || true
             docker rm lfcast || true
