@@ -269,7 +269,7 @@ def export_predictions():
         return jsonify({"error": str(e)}), 500
 
 
+start_auto_input()
+
 if __name__ == "__main__":
-    from threading import Thread
-    Thread(target=start_auto_input, daemon=True).start()
     app.run(debug=True, host="0.0.0.0", port=3000)
