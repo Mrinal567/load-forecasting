@@ -20,5 +20,5 @@ COPY . .
 # Expose the port Flask runs on
 EXPOSE 8000
 
-# Run Gunicorn with 1 worker, binding to port 8000
-CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:8000", "main:app"]
+# Run Gunicorn with 4 worker, binding to port 8000
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:8000", "main:app"]
