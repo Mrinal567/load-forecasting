@@ -51,7 +51,7 @@ def predict(hourly=False):
         if hourly:
             # Use a default value if no previous prediction is available
             previous_demand = last_vals.get(
-                'hourly') or last_vals.get('daily') or 100
+                'hourly') or last_vals.get('daily') or 0
 
             user_input = [
                 float(previous_demand),
@@ -68,7 +68,7 @@ def predict(hourly=False):
         else:
             # Use a default value if no previous prediction is available
             previous_demand = last_vals.get(
-                'daily') or last_vals.get('hourly') or 100
+                'daily') or last_vals.get('hourly') or 0
 
             user_input = [
                 float(previous_demand),
