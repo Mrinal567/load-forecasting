@@ -132,7 +132,7 @@ def run_schedule():
     # Schedule jobs
     # Run hourly predictions every hour
     schedule.every().hour.at(":00").do(give_hourly_prompt)
-    schedule.every().day.at("00:00").do(give_daily_prompt)
+    schedule.every().day.at("13:00").do(give_daily_prompt)
 
     logger.info(
         "Jobs scheduled: hourly predictions every hour and daily predictions every day")
