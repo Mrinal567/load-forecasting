@@ -269,10 +269,7 @@ def export_predictions():
         return jsonify({"error": str(e)}), 500
 
 
-
-# Start scheduler always
 start_auto_input()
 
-# Start Flask server only if running directly
 if __name__ == "__main__":
-    app.run(debug=False, host="0.0.0.0", port=3000)
+    app.run(debug=True, host="0.0.0.0", port=3000)
